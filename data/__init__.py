@@ -4,6 +4,7 @@ from data.base import *
 from data.cityscapes_loader import cityscapesLoader
 from data.gta5_dataset import GTA5DataSet
 from data.synthia_dataset import SynthiaDataSet
+from data.multiview import MulitviewSegLoader
 
 
 def get_loader(name):
@@ -13,7 +14,8 @@ def get_loader(name):
     return {
         "cityscapes": cityscapesLoader,
         "gta": GTA5DataSet,
-        "synthia": SynthiaDataSet
+        "synthia": SynthiaDataSet,
+        "multiview":MulitviewSegLoader
     }[name]
 
 def get_data_path(name):
@@ -27,3 +29,5 @@ def get_data_path(name):
         return '../data/gta/'
     if name == 'synthia':
         return '../data/RAND_CITYSCAPES'
+    if name == 'multiview':
+        return '"/tmp/texture_multibot_push_left10030/videos/train"'

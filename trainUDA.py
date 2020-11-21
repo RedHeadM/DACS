@@ -44,6 +44,7 @@ from evaluateUDA import evaluate
 
 import time
 
+
 start = timeit.default_timer()
 start_writeable = datetime.datetime.now().strftime('%m-%d_%H-%M')
 
@@ -277,9 +278,9 @@ def main():
     model.cuda()
 
     cudnn.benchmark = True
+    data_loader = get_loader('cityscapes')
+    data_path = get_data_path('cityscapes')
     if dataset == 'cityscapes':
-        data_loader = get_loader('cityscapes')
-        data_path = get_data_path('cityscapes')
         if random_crop:
             data_aug = Compose([RandomCrop_city(input_size)])
         else:
@@ -287,6 +288,15 @@ def main():
 
         #data_aug = Compose([RandomHorizontallyFlip()])
         train_dataset = data_loader(data_path, is_transform=True, augmentations=data_aug, img_size=input_size, img_mean = IMG_MEAN)
+    elif dataset == 'mulitview':
+        train_dataset = data_loader(data_path,
+                is_transform=True,
+                view_idx = 1,
+                num_view = 2,
+                load_seg_mask = False,
+                augmentations=data_aug,
+                img_size=input_size,
+                img_mean = IMG_MEAN)
 
     train_dataset_size = len(train_dataset)
     print ('dataset size: ', train_dataset_size)
@@ -310,20 +320,29 @@ def main():
 
 
     #New loader for Domain transfer
-    if True:
+    if random_crop:
+        data_aug = Compose([RandomCrop_gta(input_size)])
+    else:
+        data_aug = None
+    #data_aug = Compose([RandomHorizontallyFlip()])
+    if dataset == 'mulitview':
+        train_dataset = data_loader(data_path,
+                is_transform=True,
+                view_idx = 0,
+                num_view = 1,
+                load_seg_mask = True,
+                augmentations=data_aug,
+                img_size=input_size,
+                img_mean = IMG_MEAN)
+    else:
         data_loader = get_loader('gta')
         data_path = get_data_path('gta')
-        if random_crop:
-            data_aug = Compose([RandomCrop_gta(input_size)])
-        else:
-            data_aug = None
-
-        #data_aug = Compose([RandomHorizontallyFlip()])
         train_dataset = data_loader(data_path, list_path = './data/gta5_list/train.txt', augmentations=data_aug, img_size=(1280,720), mean=IMG_MEAN)
 
     trainloader = data.DataLoader(train_dataset,
                     batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
 
+    # training loss for labeled data only
     trainloader_iter = iter(trainloader)
     print('gta size:',len(trainloader))
 
@@ -604,7 +623,7 @@ if __name__ == '__main__':
     h, w = map(int, input_size_string.split(','))
     input_size = (h, w)
 
-    ignore_label = config['ignore_label'] 
+    ignore_label = config['ignore_label']
 
     learning_rate = config['training']['learning_rate']
 
