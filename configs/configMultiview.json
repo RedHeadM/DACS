@@ -1,6 +1,6 @@
 {
   "model": "DeepLab",
-  "dataset": "mulitview",
+  "dataset": "multiview",
 
   "training": {
     "batch_size": 2,
@@ -38,9 +38,9 @@
   "ignore_label": 255,
 
   "utils": {
-    "save_checkpoint_every": 5000,
+    "save_checkpoint_every": 1,
     "checkpoint_dir": "../saved/DeepLabv2",
-    "val_per_iter": 5000,
+    "val_per_iter": 1,
     "tensorboard": true,
     "log_per_iter": 100,
     "save_best_model": true

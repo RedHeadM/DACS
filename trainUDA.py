@@ -190,6 +190,7 @@ def _save_checkpoint(iteration, model, optimizer, config, ema_model, save_best=F
     if save_best:
         filename = os.path.join(checkpoint_dir, f'best_model.pth')
         torch.save(checkpoint, filename)
+        print('filename: {}'.format(filename))
         print("Saving current best model: best_model.pth")
     else:
         filename = os.path.join(checkpoint_dir, f'checkpoint-iter{iteration}.pth')
@@ -278,21 +279,21 @@ def main():
     model.cuda()
 
     cudnn.benchmark = True
-    data_loader = get_loader('cityscapes')
-    data_path = get_data_path('cityscapes')
+    data_loader = get_loader(config['dataset'])
+    data_path = get_data_path(config['dataset'])
+    # if random_crop:
+        # data_aug = Compose([RandomCrop_city(input_size)])
+    # else:
+        # data_aug = None
+    data_aug = Compose([RandomHorizontallyFlip()])
     if dataset == 'cityscapes':
-        if random_crop:
-            data_aug = Compose([RandomCrop_city(input_size)])
-        else:
-            data_aug = None
-
-        #data_aug = Compose([RandomHorizontallyFlip()])
         train_dataset = data_loader(data_path, is_transform=True, augmentations=data_aug, img_size=input_size, img_mean = IMG_MEAN)
-    elif dataset == 'mulitview':
+    elif dataset == 'multiview':
+        print('data_loader: {}'.format(data_loader.__name__))
         train_dataset = data_loader(data_path,
                 is_transform=True,
                 view_idx = 1,
-                num_view = 2,
+                number_views= 2,
                 load_seg_mask = False,
                 augmentations=data_aug,
                 img_size=input_size,
@@ -320,16 +321,16 @@ def main():
 
 
     #New loader for Domain transfer
-    if random_crop:
-        data_aug = Compose([RandomCrop_gta(input_size)])
-    else:
-        data_aug = None
-    #data_aug = Compose([RandomHorizontallyFlip()])
-    if dataset == 'mulitview':
+    # if random_crop:
+        # data_aug = Compose([RandomCrop_gta(input_size)])
+    # else:
+        # data_aug = None
+    data_aug = Compose([RandomHorizontallyFlip()])
+    if dataset == 'multiview':
         train_dataset = data_loader(data_path,
                 is_transform=True,
                 view_idx = 0,
-                num_view = 1,
+               number_views = 1,
                 load_seg_mask = True,
                 augmentations=data_aug,
                 img_size=input_size,
@@ -337,7 +338,8 @@ def main():
     else:
         data_loader = get_loader('gta')
         data_path = get_data_path('gta')
-        train_dataset = data_loader(data_path, list_path = './data/gta5_list/train.txt', augmentations=data_aug, img_size=(1280,720), mean=IMG_MEAN)
+        train_dataset = data_loader(data_path, list_path = './data/gta5_list/train.txt',
+                augmentations=data_aug, img_size=(1280,720), mean=IMG_MEAN)
 
     trainloader = data.DataLoader(train_dataset,
                     batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
@@ -410,7 +412,6 @@ def main():
         #else:
         weak_parameters={"flip": 0}
 
-
         images, labels, _, _ = batch
         images = images.cuda()
         labels = labels.cuda().long()
@@ -430,7 +431,7 @@ def main():
                 trainloader_remain_iter = iter(trainloader_remain)
                 batch_remain = next(trainloader_remain_iter)
 
-            images_remain, _, _, _, _ = batch_remain
+            images_remain, *_ = batch_remain
             images_remain = images_remain.cuda()
             inputs_u_w, _ = weakTransform(weak_parameters, data = images_remain)
             #inputs_u_w = inputs_u_w.clone()

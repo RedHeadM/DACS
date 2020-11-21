@@ -44,9 +44,9 @@ class MulitviewSegLoader(data.Dataset):
         number_views,
         view_idx,
         load_seg_mask = True,
-        is_transform=False,
+        is_transform=True,
         img_size=(300, 300),
-        img_norm=False,
+        img_norm=True,
         augmentations=None,
         version="stillseg",
         return_id=False,
@@ -64,9 +64,10 @@ class MulitviewSegLoader(data.Dataset):
         self.is_transform = is_transform
         self.view_idx = view_idx
         self.number_views = number_views
+        self.img_size= img_size
         self.augmentations = augmentations
         self.img_norm = img_norm
-        self.load_seg_mask= self.load_seg_mask
+        self.load_seg_mask= load_seg_mask
         print('view_idx: {}'.format(view_idx))
         print('self.img_size: {}'.format(self.img_size))
 
@@ -74,9 +75,9 @@ class MulitviewSegLoader(data.Dataset):
             raise ValueError('view_idx: {}'.format(view_idx))
         self.view_key_img = "frames views " + str(self.view_idx)
         self.view_key_seg = "seg "+str(self.view_idx)
-        assert isinstance(view_idx, int) and isinstance(number_views, int) self.img_size = (
-            img_size if isinstance(img_size, tuple) else (img_size, img_size)
-        )
+        # assert isinstance(view_idx, int) and isinstance(number_views, int) self.img_size = (
+            # img_size if isinstance(img_size, tuple) else (img_size, img_size)
+        # )
         self.void_classes = []
         # obi robot backgour and 10 obj
         self.valid_classes = list(range(self.n_classes))
@@ -95,11 +96,12 @@ class MulitviewSegLoader(data.Dataset):
 	    "klsjadf"
         ]
 
-        self.ignore_index = 250
-        # self.ignore_index = 255
-        self.class_map = dict(zip(self.valid_classes, range(self.n_classe)))
+        # self.ignore_index = 250
+        self.ignore_index = 255
+        self.split ='view idx {} with segmenation {}'.format(view_idx,load_seg_mask)
+        self.class_map = dict(zip(self.valid_classes, range(self.n_classes)))
         self._set_files()
-        print("Found %d %s images" % (len(self), split))
+        print("Found %d %s images" % (len(self), self.split))
 
         self.return_id = return_id
 
@@ -109,14 +111,15 @@ class MulitviewSegLoader(data.Dataset):
                 return frame_len_paris[0]>10
             return min(*frame_len_paris)>10
         self.mvbdata = ViewPairDataset(self.root.strip(),
-                                        segmentation= self.load_seg_mask,
+                                        segmentation= True,
+                                        # segmentation= self.load_seg_mask, TODO
                                         transform_frames= None,
                                         number_views=self.number_views,
                                         filter_func=data_len_filter)
 
     def __len__(self):
         """__len__"""
-        return len(self.mvdata)
+        return len(self.mvbdata)
 
     def __getitem__(self, index):
         """__getitem__
@@ -125,12 +128,11 @@ class MulitviewSegLoader(data.Dataset):
         """
 
         s = self.mvbdata[index]
-        lbl = s[self.view_key_sieg]
+        lbl = s[self.view_key_seg]
         img = s[self.view_key_img]
-        print('img: {}'.format(np.max(img)))
 
         img = np.asarray(img, dtype=np.float32)
-        lbl = np.asarray(label, dtype=np.int32)
+        lbl = np.asarray(lbl, dtype=np.int32)
 
         # img = np.array(img, dtype=np.uint8)
         # lbl = np.array(lbl, dtype=np.uint8)
@@ -139,14 +141,15 @@ class MulitviewSegLoader(data.Dataset):
         if self.augmentations is not None:
             img, lbl = self.augmentations(img, lbl)
 
-        # if self.is_transform:
-            # img, lbl = self.transform(img, lbl)
+        if self.is_transform:
+            img, lbl = self.transform(img, lbl)
 
-        img_name = s['comm name']
+        img_name = s['common name']
 
         if self.return_id:
             return img, lbl, img_name, img_name, index
-        return img, lbl, None, None, img_name
+        # return img, lbl, None, None, img_name
+        return img, lbl, img_name, img_name
 
     def transform(self, img, lbl):
         """transform
@@ -159,7 +162,7 @@ class MulitviewSegLoader(data.Dataset):
         )  # uint8 with RGB mode
         img = img[:, :, ::-1]  # RGB -> BGR
         img = img.astype(np.float64)
-        img -= self.mean
+        # img -= self.mean
         if self.img_norm:
             # Resize scales images from 0 to 255, thus we need
             # to divide by 255.0
@@ -171,12 +174,12 @@ class MulitviewSegLoader(data.Dataset):
         lbl = lbl.astype(float)
         lbl = m.imresize(lbl, (self.img_size[0], self.img_size[1]), "nearest", mode="F")
         lbl = lbl.astype(int)
-        if not np.all(classes == np.unique(lbl)):
-            print("WARN: resizing labels yielded fewer classes")
+        # if not np.all(classes == np.unique(lbl)):
+            # print("WARN: resizing labels yielded fewer classes")
 
-        if not np.all(np.unique(lbl[lbl != self.ignore_index]) < self.n_classes):
-            print("after det", classes, np.unique(lbl))
-            raise ValueError("Segmentation map contained invalid class values")
+        # if not np.all(np.unique(lbl[lbl != self.ignore_index]) < self.n_classes):
+            # print("after det", classes, np.unique(lbl))
+            # raise ValueError("Segmentation map contained invalid class values")
 
         img = torch.from_numpy(img).float()
         lbl = torch.from_numpy(lbl).long()
