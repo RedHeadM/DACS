@@ -155,7 +155,7 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
         data_path = '/tmp/texture_multibot_push_left10030/videos/val'
         test_dataset = data_loader(data_path,
                 is_transform=True,
-                view_idx = 1,
+                view_idx = 0,
                 number_views= 2,
                 load_seg_mask = True,
                 # augmentations=data_aug,

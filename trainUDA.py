@@ -330,7 +330,7 @@ def main():
         train_dataset = data_loader(data_path,
                 is_transform=True,
                 view_idx = 0,
-               number_views = 1,
+                number_views = 1,
                 load_seg_mask = True,
                 augmentations=data_aug,
                 img_size=input_size,
