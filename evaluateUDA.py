@@ -133,9 +133,10 @@ def get_iou(data_list, class_num, dataset, save_path=None):
 
 def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_dir=None, input_size=(512,1024)):
 
+    data_loader = get_loader(dataset)
+    data_path = get_data_path(dataset)
     if dataset == 'cityscapes':
         num_classes = 19
-        data_loader = get_loader('cityscapes')
         data_path = get_data_path('cityscapes')
         test_dataset = data_loader( data_path, img_size=input_size, img_mean = IMG_MEAN, is_transform=True, split='val')
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
@@ -144,12 +145,24 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
 
     elif dataset == 'gta':
         num_classes = 19
-        data_loader = get_loader('gta')
-        data_path = get_data_path('gta')
         test_dataset = data_loader(data_path, list_path = './data/gta5_list/train.txt', img_size=(1280,720), mean=IMG_MEAN)
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=True, pin_memory=True)
         interp = nn.Upsample(size=(720,1280), mode='bilinear', align_corners=True)
         ignore_label = 255
+    elif dataset ==  'multiview':
+        ignore_label = 255
+        interp = nn.Upsample(size=(300,300), mode='bilinear', align_corners=True)
+        data_path = '/tmp/texture_multibot_push_left10030/videos/val'
+        test_dataset = data_loader(data_path,
+                is_transform=True,
+                view_idx = 1,
+                number_views= 2,
+                load_seg_mask = True,
+                # augmentations=data_aug,
+                img_size=input_size,
+                img_mean = IMG_MEAN)
+        num_classes = test_dataset.n_classes
+        testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=True, pin_memory=True)
 
     print('Evaluating, found ' + str(len(testloader)) + ' images.')
 
@@ -159,7 +172,7 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
     total_loss = []
 
     for index, batch in enumerate(testloader):
-        image, label, size, name, _ = batch
+        image, label, size, name, *_ = batch
         size = size[0]
         #if index > 500:
         #    break
@@ -174,10 +187,12 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
 
             output = output.cpu().data[0].numpy()
 
-            if dataset == 'cityscapes':
-                gt = np.asarray(label[0].numpy(), dtype=np.int)
-            elif dataset == 'gta':
-                gt = np.asarray(label[0].numpy(), dtype=np.int)
+            # if dataset == 'cityscapes':
+                # gt = np.asarray(label[0].numpy(), dtype=np.int)
+            # elif dataset == 'gta':
+                # gt = np.asarray(label[0].numpy(), dtype=np.int)
+
+            gt = np.asarray(label[0].numpy(), dtype=np.int)
 
             output = output.transpose(1,2,0)
             output = np.asarray(np.argmax(output, axis=2), dtype=np.int)

@@ -146,10 +146,7 @@ class MulitviewSegLoader(data.Dataset):
 
         img_name = s['common name']
 
-        if self.return_id:
-            return img, lbl, img_name, img_name, index
-        # return img, lbl, None, None, img_name
-        return img, lbl, img_name, img_name
+        return img, lbl, img.shape, img_name
 
     def transform(self, img, lbl):
         """transform

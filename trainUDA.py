@@ -559,7 +559,11 @@ def main():
             model.eval()
             if dataset == 'cityscapes':
                 mIoU, eval_loss = evaluate(model, dataset, ignore_label=250, input_size=(512,1024), save_dir=checkpoint_dir)
-
+            elif dataset == 'multiview':
+                mIoU, eval_loss = evaluate(model, dataset, ignore_label=255,
+                        input_size=(300,300), save_dir=checkpoint_dir)
+            else:
+                print('erro dataset: {}'.format(dataset))
             model.train()
 
             if mIoU > best_mIoU and save_best_model:
@@ -569,6 +573,7 @@ def main():
             if config['utils']['tensorboard']:
                 tensorboard_writer.add_scalar('Validation/mIoU', mIoU, i_iter)
                 tensorboard_writer.add_scalar('Validation/Loss', eval_loss, i_iter)
+                print('iter {}, mIoU: {}'.format(mIoU,i_iter))
 
         if save_unlabeled_images and train_unlabeled and i_iter % save_checkpoint_every == 0:
             # Saves two mixed images and the corresponding prediction
@@ -583,6 +588,11 @@ def main():
     model.eval()
     if dataset == 'cityscapes':
         mIoU, val_loss = evaluate(model, dataset, ignore_label=250, input_size=(512,1024), save_dir=checkpoint_dir)
+    elif dataset == 'multiview':
+        mIoU, val_loss = evaluate(model, dataset, ignore_label=255,
+                input_size=(300,300), save_dir=checkpoint_dir)
+    else:
+        print('erro dataset: {}'.format(dataset))
     model.train()
     if mIoU > best_mIoU and save_best_model:
         best_mIoU = mIoU
