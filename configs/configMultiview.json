@@ -22,7 +22,7 @@
       "crop": true
     },
     "unlabeled": {
-      "train_unlabeled": false,
+      "train_unlabeled": true,
       "consistency_weight": 1,
       "consistency_loss": "CE",
       "pixel_weight": "threshold_uniform",

@@ -325,6 +325,7 @@ def main():
         # data_aug = Compose([RandomCrop_gta(input_size)])
     # else:
         # data_aug = None
+    # SUPERVSIED DATA
     data_aug = Compose([RandomHorizontallyFlip()])
     if dataset == 'multiview':
         train_dataset = data_loader(data_path,

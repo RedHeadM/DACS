@@ -112,7 +112,7 @@ def get_iou(data_list, class_num, dataset, save_path=None):
 
     aveJ, j_list, M = ConfM.jaccard()
 
-    classes = np.array(("road", "sidewalk",
+    classes = np.array(("bg", "robo",
         "building", "wall", "fence", "pole",
         "traffic_light", "traffic_sign", "vegetation",
         "terrain", "sky", "person", "rider",
@@ -155,13 +155,14 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
         data_path = '/tmp/texture_multibot_push_left10030/videos/val'
         test_dataset = data_loader(data_path,
                 is_transform=True,
-                view_idx = 0,
+                view_idx = 1,
                 number_views= 2,
                 load_seg_mask = True,
                 # augmentations=data_aug,
                 img_size=input_size,
                 img_mean = IMG_MEAN)
-        num_classes = test_dataset.n_classes
+        num_classes = test_dataset.n_classes-2
+        print('TODO reduced, block abc set 0 not  in val set num_classes: {}'.format(num_classes))
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=True, pin_memory=True)
 
     print('Evaluating, found ' + str(len(testloader)) + ' images.')
@@ -201,6 +202,7 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
 
         if (index+1) % 100 == 0:
             print('%d processed'%(index+1))
+            break
 
     if save_dir:
         filename = os.path.join(save_dir, 'result.txt')
