@@ -30,4 +30,4 @@ def get_data_path(name):
     if name == 'synthia':
         return '../data/RAND_CITYSCAPES'
     if name == 'multiview':
-        return '/tmp/texture_multibot_push_left10030/videos/train'
+        return '/tmp/tcn_data/texture_multibot_push_left10050/videos/train_adaptation'

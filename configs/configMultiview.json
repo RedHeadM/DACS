@@ -19,10 +19,10 @@
       "labeled_samples": 0,
       "input_size": "300,300",
       "scale": false,
-      "crop": true
+      "crop": false
     },
     "unlabeled": {
-      "train_unlabeled": true,
+      "train_unlabeled": false,
       "consistency_weight": 1,
       "consistency_loss": "CE",
       "pixel_weight": "threshold_uniform",
@@ -40,7 +40,7 @@
   "utils": {
     "save_checkpoint_every": 5000,
     "checkpoint_dir": "../saved/DeepLabv2",
-    "val_per_iter": 5000,
+    "val_per_iter": 1000,
     "tensorboard": true,
     "log_per_iter": 100,
     "save_best_model": true

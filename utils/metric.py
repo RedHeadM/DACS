@@ -96,7 +96,7 @@ class ConfusionMatrix(object):
         m = np.zeros((self.nclass, self.nclass))
         assert(len(gt) == len(pred))
         for i in range(len(gt)):
-            if gt[i] < self.nclass: #and pred[i] < self.nclass:
+            if gt[i] < self.nclass and pred[i] < self.nclass:
                 m[gt[i], pred[i]] += 1.0
         return m
 

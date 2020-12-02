@@ -66,6 +66,7 @@ class MulitviewSegLoader(data.Dataset):
         self.number_views = number_views
         self.img_size= img_size
         self.augmentations = augmentations
+        self.mean = img_mean
         self.img_norm = img_norm
         self.load_seg_mask= load_seg_mask
         print('view_idx: {}'.format(view_idx))
@@ -159,7 +160,7 @@ class MulitviewSegLoader(data.Dataset):
         )  # uint8 with RGB mode
         img = img[:, :, ::-1]  # RGB -> BGR
         img = img.astype(np.float64)
-        # img -= self.mean
+        img -= self.mean
         if self.img_norm:
             # Resize scales images from 0 to 255, thus we need
             # to divide by 255.0

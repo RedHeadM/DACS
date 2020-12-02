@@ -280,7 +280,7 @@ def main():
 
     cudnn.benchmark = True
     data_loader = get_loader(config['dataset'])
-    data_path = get_data_path(config['dataset'])
+    # data_path = get_data_path(config['dataset'])
     # if random_crop:
         # data_aug = Compose([RandomCrop_city(input_size)])
     # else:
@@ -289,11 +289,12 @@ def main():
     if dataset == 'cityscapes':
         train_dataset = data_loader(data_path, is_transform=True, augmentations=data_aug, img_size=input_size, img_mean = IMG_MEAN)
     elif dataset == 'multiview':
-        print('data_loader: {}'.format(data_loader.__name__))
+        # adaption data
+        data_path = '/tmp/tcn_data/texture_multibot_push_left10050/videos/train_adaptation'
         train_dataset = data_loader(data_path,
                 is_transform=True,
-                view_idx = 1,
-                number_views= 2,
+                view_idx = 0,
+                number_views= 1,
                 load_seg_mask = False,
                 augmentations=data_aug,
                 img_size=input_size,
@@ -326,6 +327,7 @@ def main():
     # else:
         # data_aug = None
     # SUPERVSIED DATA
+    data_path = '/tmp/tcn_data/texture_multibot_push_left10050/videos/train_adaptation'
     data_aug = Compose([RandomHorizontallyFlip()])
     if dataset == 'multiview':
         train_dataset = data_loader(data_path,

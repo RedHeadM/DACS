@@ -152,11 +152,11 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
     elif dataset ==  'multiview':
         ignore_label = 255
         interp = nn.Upsample(size=(300,300), mode='bilinear', align_corners=True)
-        data_path = '/tmp/texture_multibot_push_left10030/videos/val'
+        data_path = '/tmp/tcn_data/texture_multibot_push_left10050/videos/val'
         test_dataset = data_loader(data_path,
                 is_transform=True,
-                view_idx = 1,
-                number_views= 2,
+                view_idx = 0,
+                number_views= 1,
                 load_seg_mask = True,
                 # augmentations=data_aug,
                 img_size=input_size,
@@ -200,9 +200,9 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
 
             data_list.append([gt.flatten(), output.flatten()])
 
-        if (index+1) % 100 == 0:
+        if (index+1) % 200 == 0:
             print('%d processed'%(index+1))
-            break
+
 
     if save_dir:
         filename = os.path.join(save_dir, 'result.txt')
